@@ -1,0 +1,16 @@
+{
+  "name": "propvault",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PropVault — FYP Real Estate Platform",
+  "scripts": {
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "seed": "cd backend && node scripts/seed.js",
+    "dev": "concurrently -n API,WEB -c cyan,amber \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "start": "concurrently -n API,WEB -c cyan,amber \"npm start --prefix backend\" \"npm run preview --prefix frontend\"",
+    "build": "npm run build --prefix frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

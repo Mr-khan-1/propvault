@@ -1,0 +1,28 @@
+# Server Configuration
+PORT=5000
+NODE_ENV=development
+
+# MongoDB Atlas Connection
+MONGODB_URI=mongodb+srv://ranahammad9795:rana786@cluster0.fqn50wf.mongodb.net/?appName=Cluster0
+
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+JWT_EXPIRE=7d
+
+# Gmail Configuration (for OTP)
+GMAIL_USER=ranahammad9795@gmail.com
+GMAIL_APP_PASSWORD=euzx traf cevi wuvs
+
+# Frontend URL (for CORS)
+FRONTEND_URL=http://localhost:5173
+
+# Email Configuration
+EMAIL_FROM=noreply@realestate.pk
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+
+# Optional: Cloud Storage (for property images)
+# AWS_ACCESS_KEY_ID=your-key
+# AWS_SECRET_ACCESS_KEY=your-secret
+# AWS_REGION=us-east-1
+# AWS_S3_BUCKET=your-bucket
