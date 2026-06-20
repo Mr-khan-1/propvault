@@ -30,10 +30,10 @@ exports.sendOTP = async (req, res) => {
 
     let emailSent = false;
     try {
-      // 500ms timeout so the frontend never hangs
+      // 5 second timeout to ensure emails have time to send
       await Promise.race([
         sendOTP(email, otp, userType),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Email timeout')), 500))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Email timeout')), 5000))
       ]);
       emailSent = true;
     } catch (emailError) {

@@ -12,9 +12,12 @@ const createTransporter = () => {
 
   return nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
-    auth: { user, pass }
+    port: 465,
+    secure: true,
+    auth: { user, pass },
+    tls: {
+      rejectUnauthorized: false
+    }
   });
 };
 
