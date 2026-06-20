@@ -14,7 +14,13 @@ export default function Home() {
 
   useEffect(() => {
     propertyAPI.getAll({ limit: 6 })
-      .then((res) => setProperties(res.data.properties))
+      .then((res) => {
+        if (res.data && Array.isArray(res.data.properties)) {
+          setProperties(res.data.properties);
+        } else {
+          setProperties([]);
+        }
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
@@ -123,7 +129,7 @@ export default function Home() {
 
         {loading ? <Loader /> : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {properties.map((p, i) => <PropertyCard key={p._id} property={p} index={i} />)}
+            {Array.isArray(properties) ? properties.map((p, i) => <PropertyCard key={p._id} property={p} index={i} />) : null}
           </div>
         )}
 

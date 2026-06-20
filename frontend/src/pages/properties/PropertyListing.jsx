@@ -19,14 +19,19 @@ export default function PropertyListing() {
     search: '',
   });
 
-  const fetchProperties = async () => {
-    setLoading(true);
+  const fetchProperties = async (searchParams) => {
     try {
-      const clean = Object.fromEntries(Object.entries(filters).filter(([, v]) => v));
-      const { data } = await propertyAPI.getAll(clean);
-      setProperties(data.properties);
-    } catch (e) {
-      console.error(e);
+      setLoading(true);
+      const { data } = await propertyAPI.getAll(Object.fromEntries(searchParams));
+      if (data && Array.isArray(data.properties)) {
+        setProperties(data.properties);
+        setTotalPages(data.pages || 1);
+      } else {
+        setProperties([]);
+      }
+    } catch (err) {
+      console.error(err);
+      setProperties([]);
     } finally {
       setLoading(false);
     }
