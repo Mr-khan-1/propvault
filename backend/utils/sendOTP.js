@@ -23,28 +23,6 @@ const createTransporter = () => {
 
 let transporter = createTransporter();
 
-const verifyEmailService = async () => {
-  const { configured, user } = getMailConfig();
-  if (!configured) {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('ℹ️ Email service running in Developer Mode (Mock OTPs will be used).');
-    }
-    return false;
-  }
-
-  transporter = createTransporter();
-  try {
-    await transporter.verify();
-    console.log(`✅ Email service ready (${user})`);
-    return true;
-  } catch (error) {
-    console.log('❌ Email config error:', error.message);
-    return false;
-  }
-};
-
-verifyEmailService();
-
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 const sendMailSafe = async (mailOptions) => {
