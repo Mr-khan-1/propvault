@@ -5,7 +5,6 @@ import { LogIn, Mail } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { authAPI } from '../../utils/api';
 import PasswordField from '../../components/Auth/PasswordField';
-import CaptchaVerification from '../../components/Auth/CaptchaVerification';
 import ForgotPassword from '../../components/Auth/ForgotPassword';
 
 export default function Login() {
@@ -15,16 +14,10 @@ export default function Login() {
   const [error, setError] = useState('');
   const [form, setForm] = useState({ email: '', password: '', userType: 'user' });
   
-  // New Auth states
-  const [captchaVerified, setCaptchaVerified] = useState(false);
   const [showForgotPwd, setShowForgotPwd] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!captchaVerified) {
-      setError('Please verify you are not a robot');
-      return;
-    }
     setLoading(true);
     setError('');
     try {
@@ -105,9 +98,8 @@ export default function Login() {
               </button>
             </div>
 
-            <CaptchaVerification onVerify={(val) => setCaptchaVerified(!!val)} />
 
-            <button type="submit" disabled={loading || !captchaVerified} className="w-full py-2 bg-vault-gold text-vault-950 rounded-md font-semibold hover:bg-yellow-500 disabled:opacity-50 transition-colors">
+            <button type="submit" disabled={loading} className="w-full py-2 bg-vault-gold text-vault-950 rounded-md font-semibold hover:bg-yellow-500 disabled:opacity-50 transition-colors">
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>

@@ -5,7 +5,6 @@ import { Mail, User, Phone, Building2, FileBadge, Shield, Clock, CheckCircle2, A
 import { authAPI } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import PasswordField from '../../components/Auth/PasswordField';
-import CaptchaVerification from '../../components/Auth/CaptchaVerification';
 import OTPInput from '../../components/Auth/OTPInput';
 
 const steps = ['Account Type', 'Verify & Register'];
@@ -19,7 +18,6 @@ export default function Register() {
   const [otpSent, setOtpSent] = useState(false);
   const [devOtp, setDevOtp] = useState('');
   
-  const [captchaVerified, setCaptchaVerified] = useState(false);
   
   const [form, setForm] = useState({
     userType: 'user', email: '', otp: '', name: '', phone: '',
@@ -31,7 +29,6 @@ export default function Register() {
   const sendOTP = async (e) => {
     if (e) e.preventDefault();
     if (!form.email) return setError('Email required');
-    if (!captchaVerified) return setError('Please verify you are not a robot');
     
     setLoading(true);
     try {
@@ -133,9 +130,6 @@ export default function Register() {
                       <input name="email" type="email" className="w-full pl-10 px-4 py-2 border border-slate-700 bg-slate-800/50 text-white rounded-md outline-none" placeholder="Email address" required
                         value={form.email} onChange={update} />
                     </div>
-                    
-                    <CaptchaVerification onVerify={(val) => setCaptchaVerified(!!val)} />
-
                     {form.userType === 'agent' && (
                       <motion.div
                         initial={{ opacity: 0, height: 0 }}
@@ -149,7 +143,7 @@ export default function Register() {
                         </div>
                       </motion.div>
                     )}
-                    <button type="submit" disabled={loading || !captchaVerified} className="w-full py-2 bg-vault-gold text-vault-950 rounded-md font-semibold hover:bg-yellow-500 disabled:opacity-50 transition-colors">
+                    <button type="submit" disabled={loading} className="w-full py-2 bg-vault-gold text-vault-950 rounded-md font-semibold hover:bg-yellow-500 disabled:opacity-50 transition-colors">
                       {loading ? 'Sending OTP...' : 'Send OTP to Email'}
                     </button>
                   </motion.form>

@@ -39,7 +39,6 @@ const verifyEmailService = async () => {
     return true;
   } catch (error) {
     console.log('❌ Email config error:', error.message);
-    console.log('   → Gmail: 2-Step Verification ON → App Passwords → paste 16-char password in GMAIL_APP_PASSWORD');
     return false;
   }
 };
