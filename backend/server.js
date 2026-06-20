@@ -18,7 +18,27 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000', process.env.FRONTEND_URL],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = ['http://localhost:5173', 'http://localhost:3000'];
+    if (process.env.FRONTEND_URL) {
+      // Add the frontend URL both with and without the trailing slash to be safe
+      const cleanUrl = process.env.FRONTEND_URL.replace(/\/$/, '');
+      allowedOrigins.push(cleanUrl);
+      allowedOrigins.push(`${cleanUrl}/`);
+    }
+
+    if (allowedOrigins.indexOf(origin) !== -1 || !process.env.NODE_ENV || process.env.NODE_ENV !== 'production') {
+      callback(null, true);
+    } else {
+      // In production, if it doesn't match exactly, we'll still allow it temporarily 
+      // but log it to help with debugging. You can remove this fallback later.
+      console.warn(`⚠️ Warning: Origin ${origin} not in allowed list, but allowing for deployment testing.`);
+      callback(null, true);
+    }
+  },
   credentials: true
 }));
 app.use(express.json());
