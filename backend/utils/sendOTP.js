@@ -76,6 +76,5 @@ module.exports = {
   sendOTP,
   sendWelcomeEmail,
   sendAgentApprovalEmail,
-  verifyEmailService,
   getMailConfig
 };
