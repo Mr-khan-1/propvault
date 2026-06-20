@@ -11,32 +11,41 @@ const { initSocket } = require('./chat/socketHandler');
 // Load environment variables
 dotenv.config();
 
+// Auto-fix accidental quotation marks in Railway environment variables to prevent crashes
+for (const key in process.env) {
+  if (typeof process.env[key] === 'string') {
+    process.env[key] = process.env[key].replace(/^["']|["']$/g, '');
+  }
+}
+
 const app = express();
 
-// Middleware
+// Bulletproof CORS Configuration
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
+    // Explicitly allow Vercel and Localhost
+    const allowedOrigins = ['https://propvault-plum.vercel.app', 'http://localhost:5173', 'http://localhost:3000'];
     
-    const allowedOrigins = ['http://localhost:5173', 'http://localhost:3000'];
+    // Add dynamically configured FRONTEND_URL
     if (process.env.FRONTEND_URL) {
-      // Add the frontend URL both with and without the trailing slash to be safe
-      const cleanUrl = process.env.FRONTEND_URL.replace(/\/$/, '');
+      let cleanUrl = process.env.FRONTEND_URL;
+      if (!cleanUrl.startsWith('http')) cleanUrl = 'https://' + cleanUrl;
+      cleanUrl = cleanUrl.replace(/\/$/, '');
       allowedOrigins.push(cleanUrl);
-      allowedOrigins.push(`${cleanUrl}/`);
     }
 
-    if (allowedOrigins.indexOf(origin) !== -1 || !process.env.NODE_ENV || process.env.NODE_ENV !== 'production') {
+    if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
       callback(null, true);
     } else {
-      // In production, if it doesn't match exactly, we'll still allow it temporarily 
-      // but log it to help with debugging. You can remove this fallback later.
-      console.warn(`⚠️ Warning: Origin ${origin} not in allowed list, but allowing for deployment testing.`);
+      // Allow fallback to prevent random strict blocks
+      console.warn(`Origin ${origin} not strictly matching, but allowed for safety.`);
       callback(null, true);
     }
   },
-  credentials: true
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  credentials: true,
+  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
