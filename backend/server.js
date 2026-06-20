@@ -61,7 +61,7 @@ const connectDB = async () => {
     console.log('✅ MongoDB Connected to Atlas');
   } catch (error) {
     console.error('❌ MongoDB Connection Error:', error.message);
-    process.exit(1);
+    // Removed process.exit(1) so the server can still respond to health checks and API errors instead of returning 502 Bad Gateway
   }
 };
 
