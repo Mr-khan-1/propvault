@@ -4,10 +4,7 @@ const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const path = require('path');
 const http = require('http');
-const dns = require('dns');
-
-// Force Google DNS to bypass Node.js querySrv ECONNREFUSED issues on Windows
-dns.setServers(['8.8.8.8', '8.8.4.4']);
+// Removed dangerous dns.setServers override which breaks cloud deployments
 
 const { initSocket } = require('./chat/socketHandler');
 
