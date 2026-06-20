@@ -13,8 +13,11 @@ const ChatWindow = ({ currentUser, chatPartner, onClose }) => {
 
   // Initialize Socket Connection
   useEffect(() => {
+    // Get the base URL (stripping '/api' if present since socket runs on root)
+    const backendUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace('/api', '');
+    
     // Connect to the backend socket server
-    const newSocket = io('http://localhost:5000', {
+    const newSocket = io(backendUrl, {
       query: { userId: currentUser._id }
     });
     
