@@ -74,7 +74,9 @@ app.use('/api/agent', require('./api/agent'));
 app.use('/api/user', require('./api/user'));
 app.use('/api/properties', require('./api/property'));
 
-// Health Check
+// Health Check Routes (to prevent Railway from killing the container)
+app.get('/', (req, res) => res.status(200).send('OK'));
+app.get('/health', (req, res) => res.status(200).send('OK'));
 app.get('/api/health', (req, res) => {
   res.json({ status: 'Server is running ✅' });
 });
