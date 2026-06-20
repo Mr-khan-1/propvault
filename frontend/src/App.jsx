@@ -5,6 +5,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
 import Loader from './components/Loader';
+import AnimatedBackground from './components/AnimatedBackground';
 import Home from './pages/Home';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
@@ -45,7 +46,8 @@ export default function App() {
   return (
     <AuthContext.Provider value={{ user, login, logout, loading }}>
       <BrowserRouter>
-        <div className="min-h-screen flex flex-col grid-bg">
+        <div className="min-h-screen flex flex-col relative">
+          <AnimatedBackground />
           <Navbar />
           <main className="flex-1">
             <Routes>

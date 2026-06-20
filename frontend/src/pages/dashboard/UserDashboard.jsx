@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Heart, MessageSquare, User, Send } from 'lucide-react';
+import { Heart, MessageSquare, User, Send, MessageCircle } from 'lucide-react';
 import { userAPI } from '../../utils/api';
+import { useAuth } from '../../context/AuthContext';
 import StatCard from '../../components/StatCard';
 import PropertyCard from '../../components/PropertyCard';
 import Loader from '../../components/Loader';
+import ChatWindow from '../../components/Chat/ChatWindow';
 
 export default function UserDashboard() {
   const [data, setData] = useState(null);
@@ -13,6 +15,8 @@ export default function UserDashboard() {
   const [favorites, setFavorites] = useState([]);
   const [tab, setTab] = useState('overview');
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const [activeChat, setActiveChat] = useState(null);
 
   useEffect(() => {
     Promise.all([userAPI.dashboard(), userAPI.inquiries(), userAPI.favorites()])
@@ -90,12 +94,22 @@ export default function UserDashboard() {
               </div>
               <p className="text-sm text-slate-300 mb-2">{inq.message}</p>
               <p className="text-xs text-slate-500">Agent: {inq.agentId?.name} · {inq.agentId?.company}</p>
-              {inq.agentResponse?.message && (
+              
+              {inq.status === 'responded' && (
                 <div className="mt-3 p-3 bg-emerald-500/5 border border-emerald-500/20 rounded-lg">
                   <p className="text-xs text-emerald-400 font-medium mb-1">Agent Response</p>
                   <p className="text-sm text-slate-300">{inq.agentResponse.message}</p>
                 </div>
               )}
+              
+              <div className="mt-4 border-t border-white/5 pt-3 flex justify-end">
+                <button 
+                  onClick={() => setActiveChat(inq.agentId)}
+                  className="btn-outline py-1.5 px-4 text-xs flex items-center gap-2"
+                >
+                  <MessageCircle size={14} /> Chat with Agent
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -107,6 +121,14 @@ export default function UserDashboard() {
             <p className="text-slate-400 col-span-full text-center py-10">No favorites saved yet</p>
           ) : favorites.map((p, i) => <PropertyCard key={p._id} property={p} index={i} />)}
         </div>
+      )}
+      
+      {activeChat && user && (
+        <ChatWindow 
+          currentUser={user} 
+          chatPartner={activeChat} 
+          onClose={() => setActiveChat(null)} 
+        />
       )}
     </div>
   );

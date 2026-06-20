@@ -1,8 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { LogIn, Mail } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { authAPI } from '../../utils/api';
+import PasswordField from '../../components/Auth/PasswordField';
+import CaptchaVerification from '../../components/Auth/CaptchaVerification';
+import ForgotPassword from '../../components/Auth/ForgotPassword';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -10,9 +14,17 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [form, setForm] = useState({ email: '', password: '', userType: 'user' });
+  
+  // New Auth states
+  const [captchaVerified, setCaptchaVerified] = useState(false);
+  const [showForgotPwd, setShowForgotPwd] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!captchaVerified) {
+      setError('Please verify you are not a robot');
+      return;
+    }
     setLoading(true);
     setError('');
     try {
@@ -27,55 +39,90 @@ export default function Login() {
     }
   };
 
+  const handleForgotPassword = async (email) => {
+    // API call to send forgot password email
+    await authAPI.forgotPassword({ email, userType: form.userType });
+  };
+
   return (
-    <div className="min-h-[85vh] flex items-center justify-center px-4 py-12">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
-        <div className="glass rounded-3xl p-8">
-          <div className="text-center mb-8">
+    <div className="min-h-[85vh] flex items-center justify-center px-4 py-12 relative">
+      <motion.div
+        initial={{ opacity: 0, y: 24, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        className="w-full max-w-md relative z-10"
+      >
+        <div className="ultra-glass rounded-3xl p-8 card-shine">
+          <div className="text-center mb-8 relative z-10">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.15, type: 'spring' }}
+              className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-vault-gold to-amber-500 flex items-center justify-center shadow-lg shadow-vault-gold/20"
+            >
+              <LogIn className="text-vault-950" size={24} />
+            </motion.div>
             <h1 className="font-display text-3xl font-bold text-white mb-2">Welcome Back</h1>
             <p className="text-slate-400">Sign in to your PropVault account</p>
           </div>
 
           {error && (
-            <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">{error}</div>
+            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+              className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm relative z-10">{error}</motion.div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
             <div>
               <label className="text-sm text-slate-400 mb-1 block">Login As</label>
-              <select className="input-field" value={form.userType}
+              <select className="w-full px-4 py-2 border border-slate-700 bg-slate-800/50 text-white rounded-md outline-none" value={form.userType}
                 onChange={(e) => setForm({ ...form, userType: e.target.value })}>
                 <option value="user">User / Buyer</option>
                 <option value="agent">Agent</option>
                 <option value="admin">Admin</option>
               </select>
             </div>
-            <div>
-              <label className="text-sm text-slate-400 mb-1 block">Email</label>
-              <input type="email" className="input-field" placeholder="you@email.com" required
+            <div className="relative">
+              <Mail className="absolute left-3 top-2.5 text-slate-500" size={18} />
+              <input type="email" className="w-full pl-10 px-4 py-2 border border-slate-700 bg-slate-800/50 text-white rounded-md outline-none" placeholder="you@email.com" required
                 value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
             </div>
-            <div>
-              <label className="text-sm text-slate-400 mb-1 block">Password</label>
-              <input type="password" className="input-field" placeholder="••••••••" required
-                value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+            
+            <div className="relative">
+              <PasswordField 
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                showRequirements={false}
+              />
             </div>
-            <button type="submit" disabled={loading} className="btn-primary w-full disabled:opacity-50">
+            
+            <div className="flex justify-end -mt-2">
+              <button 
+                type="button" 
+                onClick={() => setShowForgotPwd(true)}
+                className="text-sm text-vault-gold hover:underline"
+              >
+                Forgot Password?
+              </button>
+            </div>
+
+            <CaptchaVerification onVerify={(val) => setCaptchaVerified(!!val)} />
+
+            <button type="submit" disabled={loading || !captchaVerified} className="w-full py-2 bg-vault-gold text-vault-950 rounded-md font-semibold hover:bg-yellow-500 disabled:opacity-50 transition-colors">
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 
-          <p className="text-center text-slate-400 text-sm mt-6">
+          <p className="text-center text-slate-400 text-sm mt-6 relative z-10">
             No account? <Link to="/auth/register" className="text-vault-gold hover:underline">Register with OTP</Link>
           </p>
-
-          <div className="mt-6 p-3 rounded-xl bg-vault-gold/5 border border-vault-gold/20 text-xs text-slate-400">
-            <p className="text-vault-gold font-medium mb-1">Demo Credentials</p>
-            <p>Admin: admin@propvault.pk / Admin@123</p>
-            <p>Agent: agent@propvault.pk / Agent@123</p>
-          </div>
         </div>
       </motion.div>
+
+      <ForgotPassword 
+        isOpen={showForgotPwd} 
+        onClose={() => setShowForgotPwd(false)} 
+        onSubmit={handleForgotPassword} 
+      />
     </div>
   );
 }

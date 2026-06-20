@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, LogOut, LayoutDashboard } from 'lucide-react';
@@ -8,6 +8,13 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const dashPath = user?.userType === 'admin' ? '/admin/dashboard'
     : user?.userType === 'agent' ? '/agent/dashboard'
@@ -20,21 +27,25 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 glass border-b border-white/5">
+    <nav className={`sticky top-0 z-50 transition-all duration-500 ${scrolled ? 'glass border-b border-white/10 shadow-lg shadow-black/20' : 'bg-transparent border-b border-transparent'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-vault-gold to-amber-600 flex items-center justify-center">
+            <motion.div
+              whileHover={{ rotate: 5, scale: 1.05 }}
+              className="w-9 h-9 rounded-lg bg-gradient-to-br from-vault-gold to-amber-600 flex items-center justify-center shadow-md shadow-vault-gold/20"
+            >
               <span className="text-vault-950 font-bold text-sm">PV</span>
-            </div>
+            </motion.div>
             <span className="font-display font-bold text-xl tracking-tight">
               Prop<span className="text-vault-gold">Vault</span>
             </span>
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
-            <Link to="/properties" className="text-slate-300 hover:text-vault-gold transition-colors text-sm font-medium">
+            <Link to="/properties" className="text-slate-300 hover:text-vault-gold transition-colors text-sm font-medium relative group">
               Properties
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-vault-gold transition-all group-hover:w-full" />
             </Link>
             {dashPath && (
               <Link to={dashPath} className="text-slate-300 hover:text-vault-gold transition-colors text-sm font-medium flex items-center gap-1">
@@ -55,9 +66,10 @@ export default function Navbar() {
                   <p className="text-sm font-medium text-white">{user.name}</p>
                   <p className="text-xs text-vault-gold capitalize">{user.userType}</p>
                 </div>
-                <button onClick={handleLogout} className="p-2 rounded-lg hover:bg-red-500/10 text-red-400 transition-colors">
+                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                  onClick={handleLogout} className="p-2 rounded-lg hover:bg-red-500/10 text-red-400 transition-colors">
                   <LogOut size={18} />
-                </button>
+                </motion.button>
               </div>
             )}
           </div>
@@ -74,7 +86,7 @@ export default function Navbar() {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="md:hidden border-t border-white/5 overflow-hidden"
+            className="md:hidden border-t border-white/5 overflow-hidden glass"
           >
             <div className="px-4 py-4 space-y-3">
               <Link to="/properties" className="block py-2 text-slate-300" onClick={() => setOpen(false)}>Properties</Link>

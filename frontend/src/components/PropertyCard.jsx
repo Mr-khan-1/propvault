@@ -17,7 +17,7 @@ export default function PropertyCard({ property, index = 0 }) {
       transition={{ delay: index * 0.08, duration: 0.5 }}
     >
       <Link to={`/properties/${property._id}`} className="group block">
-        <div className="glass-card overflow-hidden p-0 hover:shadow-2xl hover:shadow-vault-gold/5">
+        <motion.div whileHover={{ y: -6 }} transition={{ duration: 0.35 }} className="glass-card overflow-hidden p-0 card-shine">
           <div className="relative h-56 overflow-hidden">
             <img
               src={property.images?.[0] || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800'}
@@ -56,7 +56,7 @@ export default function PropertyCard({ property, index = 0 }) {
               </span>
             </div>
           </div>
-        </div>
+        </motion.div>
       </Link>
     </motion.div>
   );

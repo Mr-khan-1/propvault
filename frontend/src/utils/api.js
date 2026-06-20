@@ -42,6 +42,7 @@ export const adminAPI = {
   approveAgent: (id) => api.patch(`/admin/agents/${id}/approve`),
   rejectAgent: (id) => api.patch(`/admin/agents/${id}/reject`),
   suspendAgent: (id) => api.patch(`/admin/agents/${id}/suspend`),
+  unsuspendAgent: (id) => api.patch(`/admin/agents/${id}/unsuspend`),
   users: () => api.get('/admin/users'),
   toggleUser: (id) => api.patch(`/admin/users/${id}/toggle`),
   properties: () => api.get('/admin/properties'),

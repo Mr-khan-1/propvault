@@ -29,18 +29,26 @@ export default function Home() {
     <div>
       {/* Hero */}
       <section className="relative min-h-[90vh] flex items-center overflow-hidden">
-        <div className="absolute inset-0 bg-hero-gradient" />
-        <div className="absolute top-20 right-10 w-72 h-72 bg-vault-gold/5 rounded-full blur-3xl animate-float" />
-        <div className="absolute bottom-20 left-10 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-20 right-10 w-72 h-72 bg-vault-gold/8 rounded-full blur-3xl animate-float" />
+        <div className="absolute bottom-20 left-10 w-96 h-96 bg-amber-500/8 rounded-full blur-3xl animate-float-slow" style={{ animationDelay: '2s' }} />
 
         <div className="page-container relative z-10 w-full">
-          <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-            <div className="inline-flex items-center gap-2 px-4 py-2 glass rounded-full text-sm text-vault-gold mb-6">
-              <Sparkles size={14} /> Pakistan's Premium Property Platform
-            </div>
+          <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1 }}
+              className="inline-flex items-center gap-2 px-4 py-2 ultra-glass rounded-full text-sm text-vault-gold mb-6"
+            >
+              <Sparkles size={14} className="animate-pulse-soft" /> Pakistan's Premium Property Platform
+            </motion.div>
             <h1 className="font-display text-5xl md:text-7xl font-bold leading-tight mb-6 max-w-4xl">
-              Discover Your
-              <span className="text-gradient block">Perfect Property</span>
+              <motion.span initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className="block">
+                Discover Your
+              </motion.span>
+              <motion.span initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.35 }} className="text-gradient block">
+                Perfect Property
+              </motion.span>
             </h1>
             <p className="text-slate-400 text-lg md:text-xl max-w-2xl mb-10 leading-relaxed">
               Buy, sell, or rent verified properties with trusted agents. Secure OTP authentication, admin-verified listings, and real-time inquiries.
@@ -52,7 +60,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
-            className="glass rounded-2xl p-6 max-w-4xl"
+            className="ultra-glass rounded-2xl p-6 max-w-4xl card-shine"
           >
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <input className="input-field" placeholder="City..." value={filters.city}
@@ -88,9 +96,12 @@ export default function Home() {
             { icon: Shield, label: 'Secure OTP Auth', val: '100%' },
             { icon: Sparkles, label: 'Cities Covered', val: '15+' },
           ].map((s, i) => (
-            <motion.div key={s.label} initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ delay: i * 0.1 }}
-              className="text-center">
-              <s.icon className="mx-auto text-vault-gold mb-2" size={24} />
+            <motion.div key={s.label} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+              className="text-center group"
+            >
+              <div className="inline-flex p-3 rounded-2xl bg-vault-gold/5 border border-vault-gold/10 mb-3 group-hover:scale-110 transition-transform duration-300">
+                <s.icon className="text-vault-gold" size={24} />
+              </div>
               <p className="font-display font-bold text-2xl text-white">{s.val}</p>
               <p className="text-slate-400 text-sm">{s.label}</p>
             </motion.div>
@@ -125,7 +136,7 @@ export default function Home() {
 
       {/* CTA */}
       <section className="page-container pb-20">
-        <div className="glass rounded-3xl p-10 md:p-16 text-center relative overflow-hidden">
+        <div className="ultra-glass rounded-3xl p-10 md:p-16 text-center relative overflow-hidden card-shine">
           <div className="absolute inset-0 shimmer opacity-30" />
           <div className="relative z-10">
             <h2 className="font-display text-3xl md:text-5xl font-bold mb-4">Ready to Get Started?</h2>

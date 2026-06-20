@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, MessageSquare, Plus, Edit, Trash2, Eye, Briefcase } from 'lucide-react';
+import { Home, MessageSquare, Plus, Edit, Trash2, Eye, Briefcase, MessageCircle } from 'lucide-react';
 import { agentAPI } from '../../utils/api';
+import { useAuth } from '../../context/AuthContext';
 import StatCard from '../../components/StatCard';
 import PropertyCard from '../../components/PropertyCard';
 import Loader from '../../components/Loader';
+import ChatWindow from '../../components/Chat/ChatWindow';
 
 const EMPTY_FORM = {
   title: '', description: '', type: 'apartment', purpose: 'sale',
@@ -21,6 +23,8 @@ export default function AgentDashboard() {
   const [tab, setTab] = useState('overview');
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const { user } = useAuth();
+  const [activeChat, setActiveChat] = useState(null);
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
@@ -235,9 +239,26 @@ export default function AgentDashboard() {
                     <button onClick={() => respondInquiry(inq._id)} className="btn-primary text-sm px-4">Reply</button>
                   </div>
                 )}
+                
+                <div className="mt-4 border-t border-white/5 pt-3 flex justify-end">
+                  <button 
+                    onClick={() => setActiveChat(inq.userId)}
+                    className="btn-outline py-1.5 px-4 text-xs flex items-center gap-2"
+                  >
+                    <MessageCircle size={14} /> Chat with User
+                  </button>
+                </div>
               </div>
             ))}
         </div>
+      )}
+      
+      {activeChat && user && (
+        <ChatWindow 
+          currentUser={user} 
+          chatPartner={activeChat} 
+          onClose={() => setActiveChat(null)} 
+        />
       )}
     </div>
   );

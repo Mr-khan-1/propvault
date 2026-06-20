@@ -1,32 +1,61 @@
 const nodemailer = require('nodemailer');
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD?.replace(/\s/g, '')
-  }
-});
+const getMailConfig = () => {
+  const user = (process.env.GMAIL_USER || process.env.EMAIL_USER)?.trim();
+  const pass = (process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASSWORD)?.replace(/\s/g, '').trim();
+  return { user, pass, configured: Boolean(user && pass && pass.length >= 16) };
+};
 
-transporter.verify((error) => {
-  if (error) {
-    console.log('❌ Email config error:', error.message);
+const createTransporter = () => {
+  const { user, pass, configured } = getMailConfig();
+  if (!configured) return null;
+
+  return nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    auth: { user, pass }
+  });
+};
+
+let transporter = createTransporter();
+
+const verifyEmailService = async () => {
+  const { configured, user } = getMailConfig();
+  if (!configured) {
     if (process.env.NODE_ENV === 'development') {
-      console.log('   → OTP will still work in dev mode (shown in console / on screen).');
-      console.log('   → Fix Gmail: enable 2FA → App Passwords → update GMAIL_APP_PASSWORD in backend/.env');
+      console.log('ℹ️ Email service running in Developer Mode (Mock OTPs will be used).');
     }
-  } else {
-    console.log('✅ Email service ready');
+    return false;
   }
-});
+
+  transporter = createTransporter();
+  try {
+    await transporter.verify();
+    console.log(`✅ Email service ready (${user})`);
+    return true;
+  } catch (error) {
+    console.log('❌ Email config error:', error.message);
+    console.log('   → Gmail: 2-Step Verification ON → App Passwords → paste 16-char password in GMAIL_APP_PASSWORD');
+    return false;
+  }
+};
+
+verifyEmailService();
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
+const sendMailSafe = async (mailOptions) => {
+  if (!transporter) {
+    throw new Error('Email service not configured');
+  }
+  return transporter.sendMail(mailOptions);
+};
+
 const sendOTP = async (email, otp, userType) => {
-  await transporter.sendMail({
-    from: `"PropVault" <${process.env.GMAIL_USER}>`,
+  const { user } = getMailConfig();
+  await sendMailSafe({
+    from: `"PropVault" <${user}>`,
     to: email,
     subject: `PropVault — Your ${userType} verification code`,
     html: `
@@ -43,8 +72,9 @@ const sendOTP = async (email, otp, userType) => {
 };
 
 const sendWelcomeEmail = async (email, name, userType) => {
-  await transporter.sendMail({
-    from: `"PropVault" <${process.env.GMAIL_USER}>`,
+  const { user } = getMailConfig();
+  await sendMailSafe({
+    from: `"PropVault" <${user}>`,
     to: email,
     subject: 'Welcome to PropVault',
     html: `<p>Hi ${name}, your ${userType} account on PropVault is ready. Start exploring premium properties today.</p>`
@@ -52,12 +82,20 @@ const sendWelcomeEmail = async (email, name, userType) => {
 };
 
 const sendAgentApprovalEmail = async (email, name) => {
-  await transporter.sendMail({
-    from: `"PropVault" <${process.env.GMAIL_USER}>`,
+  const { user } = getMailConfig();
+  await sendMailSafe({
+    from: `"PropVault" <${user}>`,
     to: email,
     subject: 'Agent Account Approved — PropVault',
     html: `<p>Hi ${name}, your agent account has been approved. You can now login and list properties.</p>`
   });
 };
 
-module.exports = { generateOTP, sendOTP, sendWelcomeEmail, sendAgentApprovalEmail, transporter };
+module.exports = {
+  generateOTP,
+  sendOTP,
+  sendWelcomeEmail,
+  sendAgentApprovalEmail,
+  verifyEmailService,
+  getMailConfig
+};

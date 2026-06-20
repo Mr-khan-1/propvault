@@ -10,6 +10,7 @@ router.get('/agents', adminController.getAllAgents);
 router.patch('/agents/:id/approve', adminController.approveAgent);
 router.patch('/agents/:id/reject', adminController.rejectAgent);
 router.patch('/agents/:id/suspend', adminController.suspendAgent);
+router.patch('/agents/:id/unsuspend', adminController.unsuspendAgent);
 router.get('/users', adminController.getAllUsers);
 router.patch('/users/:id/toggle', adminController.toggleUserStatus);
 router.get('/properties', adminController.getAllProperties);

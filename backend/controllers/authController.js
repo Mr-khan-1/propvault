@@ -33,12 +33,13 @@ exports.sendOTP = async (req, res) => {
       await sendOTP(email, otp, userType);
       emailSent = true;
     } catch (emailError) {
-      console.error('❌ OTP email failed:', emailError.message);
       if (process.env.NODE_ENV !== 'development') {
+        console.error('Email failed in production:', emailError.message);
         await OTP.deleteMany({ email, userType });
         return res.status(500).json({ message: 'Failed to send OTP. Please try again later.' });
       }
-      console.log(`📧 DEV OTP for ${email} (${userType}): ${otp}`);
+      // Silently fall back to Dev OTP
+      console.log(`📧 Dev Mode Active — Mock OTP for ${email} (${userType}): ${otp}`);
     }
 
     const maskedEmail = email.replace(/(.{2})(.*)(@.*)/, '$1****$3');
@@ -108,7 +109,9 @@ exports.verifyOTP = async (req, res) => {
       });
     }
 
-    await sendWelcomeEmail(email, userData.name, userType);
+    await sendWelcomeEmail(email, userData.name, userType).catch((err) => {
+      console.error('Welcome email failed (account still created):', err.message);
+    });
     const token = generateToken(newUser._id, userType);
 
     res.status(201).json({

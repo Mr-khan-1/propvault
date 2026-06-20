@@ -75,9 +75,27 @@ exports.rejectAgent = async (req, res) => {
 
 exports.suspendAgent = async (req, res) => {
   try {
-    const agent = await Agent.findByIdAndUpdate(req.params.id, { status: 'suspended' }, { new: true });
+    const agent = await Agent.findById(req.params.id);
     if (!agent) return res.status(404).json({ message: 'Agent not found' });
+    if (agent.status !== 'approved') return res.status(400).json({ message: 'Only approved agents can be suspended' });
+
+    agent.status = 'suspended';
+    await agent.save();
     res.json({ message: 'Agent suspended', agent });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.unsuspendAgent = async (req, res) => {
+  try {
+    const agent = await Agent.findById(req.params.id);
+    if (!agent) return res.status(404).json({ message: 'Agent not found' });
+    if (agent.status !== 'suspended') return res.status(400).json({ message: 'Agent is not suspended' });
+
+    agent.status = 'approved';
+    await agent.save();
+    res.json({ message: 'Agent unsuspended', agent });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
