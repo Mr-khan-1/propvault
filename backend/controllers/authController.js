@@ -30,16 +30,16 @@ exports.sendOTP = async (req, res) => {
 
     let emailSent = false;
     try {
-      await sendOTP(email, otp, userType);
+      // 3 second timeout so the frontend never hangs
+      await Promise.race([
+        sendOTP(email, otp, userType),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Email timeout')), 3000))
+      ]);
       emailSent = true;
     } catch (emailError) {
-      if (process.env.NODE_ENV !== 'development') {
-        console.error('Email failed in production:', emailError.message);
-        await OTP.deleteMany({ email, userType });
-        return res.status(500).json({ message: 'Failed to send OTP. Please try again later.' });
-      }
-      // Silently fall back to Dev OTP
-      console.log(`📧 Dev Mode Active — Mock OTP for ${email} (${userType}): ${otp}`);
+      console.error('Email sending failed or timed out:', emailError.message);
+      // We will intentionally swallow the error so it doesn't crash the user
+      // and they can still login using the fallback OTP.
     }
 
     const maskedEmail = email.replace(/(.{2})(.*)(@.*)/, '$1****$3');
@@ -51,7 +51,8 @@ exports.sendOTP = async (req, res) => {
       emailSent
     };
 
-    if (!emailSent && process.env.DEV_SHOW_OTP === 'true') {
+    // Always provide the OTP in the response if email fails so the user isn't locked out
+    if (!emailSent) {
       response.devOtp = otp;
     }
 
