@@ -32,30 +32,32 @@ exports.sendOTP = async (req, res) => {
     let emailErrorMessage = null;
     
     try {
-      // 🚀 Fail fast (3 seconds): Railway blocks port 465/587 by default.
-      // If it times out, we catch it instantly rather than making the user wait.
+      // Send email using SMTP (fails on Railway due to port 465/587 block)
       await Promise.race([
         sendOTP(email, otp, userType),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Railway SMTP Blocked / Timeout')), 3000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Railway SMTP Blocked / Timeout')), 10000))
       ]);
       emailSent = true;
     } catch (emailError) {
       emailErrorMessage = emailError.message;
-      console.warn(`⚠️ Email not sent (${emailErrorMessage}). Falling back to on-screen OTP.`);
+      console.error(`❌ Email not sent (${emailErrorMessage}).`);
     }
 
     const maskedEmail = email.replace(/(.{2})(.*)(@.*)/, '$1****$3');
     
-    // 💡 FYP / Demo Mode: Always ensure the user can proceed even if Railway blocks the email.
-    res.json({
-      message: emailSent
-        ? 'OTP sent to your email successfully.'
-        : 'Server email blocked. Please use the backup OTP below.',
-      email: maskedEmail,
-      emailSent,
-      devOtp: !emailSent ? otp : undefined, // Provide OTP directly if email fails
-      debugError: emailErrorMessage
-    });
+    if (emailSent) {
+      res.json({
+        message: 'OTP sent to your email successfully.',
+        email: maskedEmail,
+        emailSent: true
+      });
+    } else {
+      res.status(500).json({
+        message: 'Email could not be sent. Railway blocks Gmail SMTP. Please configure an Email API (like Resend/SendGrid) or contact Railway support.',
+        emailSent: false,
+        debugError: emailErrorMessage
+      });
+    }
 
   } catch (error) {
     res.status(500).json({ message: 'Failed to process OTP request', error: error.message });
