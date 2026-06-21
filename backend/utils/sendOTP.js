@@ -1,51 +1,64 @@
-const { Resend } = require('resend');
-
-// Initialize Resend
-// Note: If RESEND_API_KEY is missing, initialization won't fail, but sending will.
-const resend = new Resend(process.env.RESEND_API_KEY);
+const nodemailer = require('nodemailer');
 
 const getMailConfig = () => {
-  const apiKey = (process.env.RESEND_API_KEY || '').trim();
-  const configured = Boolean(apiKey && apiKey.startsWith('re_'));
+  const user = (process.env.GMAIL_USER || process.env.EMAIL_USER || '').trim();
+  const pass = (process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASSWORD || '').replace(/\s/g, '').trim();
+  const configured = Boolean(user && pass && pass.length >= 16);
   
   if (!configured) {
-    console.error('❌ Resend API Key not configured. Please add RESEND_API_KEY to your .env file.');
+    console.error('❌ Email not configured:', {
+      hasUser: Boolean(user),
+      userValue: user ? user.substring(0, 3) + '***' : 'MISSING',
+      hasPass: Boolean(pass),
+      passLength: pass ? pass.length : 0,
+      envKeys: Object.keys(process.env).filter(k => k.includes('MAIL') || k.includes('EMAIL')).join(', ')
+    });
   }
 
-  return { configured };
+  return { user, pass, configured };
+};
+
+// Create a FRESH transporter each time — avoids stale connection issues on Railway
+const getTransporter = () => {
+  const { user, pass, configured } = getMailConfig();
+  if (!configured) return null;
+
+  return nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    auth: { user, pass },
+    tls: {
+      rejectUnauthorized: false
+    },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000
+  });
 };
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 const sendMailSafe = async (mailOptions) => {
-  const { configured } = getMailConfig();
-  if (!configured) {
-    throw new Error('Email service not configured — missing RESEND_API_KEY');
+  const transporter = getTransporter();
+  if (!transporter) {
+    throw new Error('Email service not configured — check EMAIL_USER and EMAIL_PASSWORD env vars');
   }
   
   try {
-    const { data, error } = await resend.emails.send(mailOptions);
-    if (error) {
-      throw new Error(error.message);
-    }
-    console.log('✅ Email sent to:', mailOptions.to, '| ID:', data.id);
-    return data;
+    const result = await transporter.sendMail(mailOptions);
+    console.log('✅ Email sent to:', mailOptions.to, '| MessageId:', result.messageId);
+    return result;
   } catch (error) {
     console.error('❌ Email send failed:', error.message);
     throw error;
   }
 };
 
-const getSenderEmail = () => {
-  // Resend requires you to use a verified domain. 
-  // If you haven't verified a domain on Resend, you can only send emails from 'onboarding@resend.dev' 
-  // and ONLY to the email address you registered your Resend account with.
-  return process.env.EMAIL_FROM || 'onboarding@resend.dev';
-};
-
 const sendOTP = async (email, otp, userType) => {
+  const { user } = getMailConfig();
   await sendMailSafe({
-    from: `PropVault <${getSenderEmail()}>`,
+    from: `"PropVault" <${user}>`,
     to: email,
     subject: `PropVault — Your ${userType} verification code`,
     html: `
@@ -62,8 +75,9 @@ const sendOTP = async (email, otp, userType) => {
 };
 
 const sendWelcomeEmail = async (email, name, userType) => {
+  const { user } = getMailConfig();
   await sendMailSafe({
-    from: `PropVault <${getSenderEmail()}>`,
+    from: `"PropVault" <${user}>`,
     to: email,
     subject: 'Welcome to PropVault',
     html: `<p>Hi ${name}, your ${userType} account on PropVault is ready. Start exploring premium properties today.</p>`
@@ -71,8 +85,9 @@ const sendWelcomeEmail = async (email, name, userType) => {
 };
 
 const sendAgentApprovalEmail = async (email, name) => {
+  const { user } = getMailConfig();
   await sendMailSafe({
-    from: `PropVault <${getSenderEmail()}>`,
+    from: `"PropVault" <${user}>`,
     to: email,
     subject: 'Agent Account Approved — PropVault',
     html: `<p>Hi ${name}, your agent account has been approved. You can now login and list properties.</p>`
