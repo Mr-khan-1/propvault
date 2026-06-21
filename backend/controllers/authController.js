@@ -30,29 +30,27 @@ exports.sendOTP = async (req, res) => {
 
     let emailSent = false;
     try {
-      // 500ms timeout so the frontend never hangs
+      // 15 second timeout — Gmail SMTP needs time, especially on Railway cold starts
       await Promise.race([
         sendOTP(email, otp, userType),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Email timeout')), 500))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Email timeout')), 15000))
       ]);
       emailSent = true;
     } catch (emailError) {
       console.error('Email sending failed or timed out:', emailError.message);
-      // We will intentionally swallow the error so it doesn't crash the user
-      // and they can still login using the fallback OTP.
     }
 
     const maskedEmail = email.replace(/(.{2})(.*)(@.*)/, '$1****$3');
     const response = {
       message: emailSent
         ? 'OTP sent to your email'
-        : 'Email could not be sent. Use the OTP shown below to continue.',
+        : 'Email could not be sent. Please check your email address or try again.',
       email: maskedEmail,
       emailSent
     };
 
-    // Always provide the OTP in the response if email fails so the user isn't locked out
-    if (!emailSent) {
+    // Only expose OTP in development — NEVER in production
+    if (!emailSent && process.env.NODE_ENV !== 'production') {
       response.devOtp = otp;
     }
 
