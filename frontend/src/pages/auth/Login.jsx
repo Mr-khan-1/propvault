@@ -33,8 +33,16 @@ export default function Login() {
   };
 
   const handleForgotPassword = async (email) => {
-    // API call to send forgot password email
-    await authAPI.forgotPassword({ email, userType: form.userType });
+    try {
+      if (authAPI.forgotPassword) {
+        await authAPI.forgotPassword({ email, userType: form.userType });
+      } else {
+        alert("Forgot password feature is currently under development.");
+        setShowForgotPwd(false);
+      }
+    } catch (err) {
+      console.error("Forgot password error:", err);
+    }
   };
 
   return (

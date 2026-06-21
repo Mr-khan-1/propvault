@@ -1,6 +1,11 @@
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_URL || '/api';
+const isProd = import.meta.env.MODE === 'production';
+const fallbackUrl = isProd 
+  ? 'https://propvault-production-e553.up.railway.app/api' 
+  : '/api';
+
+const API_BASE = import.meta.env.VITE_API_URL || fallbackUrl;
 
 const api = axios.create({ baseURL: API_BASE, withCredentials: true });
 

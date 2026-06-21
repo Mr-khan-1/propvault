@@ -5,10 +5,22 @@ let io;
 const connectedUsers = new Map();
 
 const initSocket = (server) => {
+  const allowedOrigins = [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'https://propvault-plum.vercel.app'
+    ];
+    if (process.env.FRONTEND_URL) {
+      let cleanUrl = process.env.FRONTEND_URL.replace(/\/$/, '');
+      if (!cleanUrl.startsWith('http')) cleanUrl = 'https://' + cleanUrl;
+      if (!allowedOrigins.includes(cleanUrl)) allowedOrigins.push(cleanUrl);
+    }
+
   io = new Server(server, {
     cors: {
-      origin: ['http://localhost:5173', 'http://localhost:3000'],
-      methods: ['GET', 'POST']
+      origin: allowedOrigins,
+      methods: ['GET', 'POST'],
+      credentials: true
     }
   });
 
