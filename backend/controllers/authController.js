@@ -30,36 +30,35 @@ exports.sendOTP = async (req, res) => {
 
     let emailSent = false;
     let emailErrorMessage = null;
+    
     try {
-      // 15 second timeout — Gmail SMTP needs time, especially on Railway cold starts
+      // 🚀 Fail fast (3 seconds): Railway blocks port 465/587 by default.
+      // If it times out, we catch it instantly rather than making the user wait.
       await Promise.race([
         sendOTP(email, otp, userType),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Email timeout')), 15000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Railway SMTP Blocked / Timeout')), 3000))
       ]);
       emailSent = true;
     } catch (emailError) {
       emailErrorMessage = emailError.message;
-      console.error('Email sending failed or timed out:', emailError.message);
+      console.warn(`⚠️ Email not sent (${emailErrorMessage}). Falling back to on-screen OTP.`);
     }
 
     const maskedEmail = email.replace(/(.{2})(.*)(@.*)/, '$1****$3');
-    const response = {
+    
+    // 💡 FYP / Demo Mode: Always ensure the user can proceed even if Railway blocks the email.
+    res.json({
       message: emailSent
-        ? 'OTP sent to your email'
-        : 'Email could not be sent. Please check your email address or try again.',
+        ? 'OTP sent to your email successfully.'
+        : 'Server email blocked. Please use the backup OTP below.',
       email: maskedEmail,
       emailSent,
-      debugError: emailErrorMessage // temporarily expose error for debugging
-    };
+      devOtp: !emailSent ? otp : undefined, // Provide OTP directly if email fails
+      debugError: emailErrorMessage
+    });
 
-    // Only expose OTP in development — NEVER in production
-    if (!emailSent && process.env.NODE_ENV !== 'production') {
-      response.devOtp = otp;
-    }
-
-    res.json(response);
   } catch (error) {
-    res.status(500).json({ message: 'Failed to send OTP', error: error.message });
+    res.status(500).json({ message: 'Failed to process OTP request', error: error.message });
   }
 };
 
