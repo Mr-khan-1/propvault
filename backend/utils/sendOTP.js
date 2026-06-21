@@ -1,34 +1,42 @@
-const { Resend } = require('resend');
-
-// Only instantiate Resend if the API key is provided
-const apiKey = (process.env.RESEND_API_KEY || '').trim();
-const resend = apiKey ? new Resend(apiKey) : null;
+const nodemailer = require('nodemailer');
 
 const getMailConfig = () => {
-  const configured = Boolean(apiKey && apiKey.startsWith('re_'));
+  const user = (process.env.GMAIL_USER || process.env.EMAIL_USER || '').trim();
+  const pass = (process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASSWORD || '').replace(/\s/g, '').trim();
+  const configured = Boolean(user && pass && pass.length >= 16);
   
   if (!configured) {
-    console.error('❌ Resend API Key not configured. Server is running, but emails will fail until you add RESEND_API_KEY to your Railway variables.');
+    console.error('❌ Email not configured: Missing or invalid Gmail credentials in .env');
   }
 
-  return { configured };
+  return { user, pass, configured };
+};
+
+const getTransporter = () => {
+  const { user, pass, configured } = getMailConfig();
+  if (!configured) return null;
+
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: { user, pass },
+    tls: {
+      rejectUnauthorized: false
+    }
+  });
 };
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 const sendMailSafe = async (mailOptions) => {
-  const { configured } = getMailConfig();
-  if (!configured || !resend) {
-    throw new Error('Email service not configured — missing RESEND_API_KEY');
+  const transporter = getTransporter();
+  if (!transporter) {
+    throw new Error('Email service not configured — missing GMAIL credentials');
   }
   
   try {
-    const { data, error } = await resend.emails.send(mailOptions);
-    if (error) {
-      throw new Error(error.message);
-    }
-    console.log('✅ Email sent to:', mailOptions.to, '| ID:', data.id);
-    return data;
+    const info = await transporter.sendMail(mailOptions);
+    console.log('✅ Email sent to:', mailOptions.to, '| ID:', info.messageId);
+    return info;
   } catch (error) {
     console.error('❌ Email send failed:', error.message);
     throw error;
@@ -36,9 +44,8 @@ const sendMailSafe = async (mailOptions) => {
 };
 
 const getSenderEmail = () => {
-  // Resend requires a verified domain. 
-  // Free accounts use 'onboarding@resend.dev' and can only send to their registered email.
-  return process.env.EMAIL_FROM || 'onboarding@resend.dev';
+  const { user } = getMailConfig();
+  return process.env.EMAIL_FROM || user || 'noreply@propvault.com';
 };
 
 const sendOTP = async (email, otp, userType) => {
