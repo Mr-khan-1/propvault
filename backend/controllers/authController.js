@@ -29,6 +29,7 @@ exports.sendOTP = async (req, res) => {
     await OTP.create({ email, otp, userType });
 
     let emailSent = false;
+    let emailErrorMessage = null;
     try {
       // 15 second timeout — Gmail SMTP needs time, especially on Railway cold starts
       await Promise.race([
@@ -37,6 +38,7 @@ exports.sendOTP = async (req, res) => {
       ]);
       emailSent = true;
     } catch (emailError) {
+      emailErrorMessage = emailError.message;
       console.error('Email sending failed or timed out:', emailError.message);
     }
 
@@ -46,7 +48,8 @@ exports.sendOTP = async (req, res) => {
         ? 'OTP sent to your email'
         : 'Email could not be sent. Please check your email address or try again.',
       email: maskedEmail,
-      emailSent
+      emailSent,
+      debugError: emailErrorMessage // temporarily expose error for debugging
     };
 
     // Only expose OTP in development — NEVER in production
