@@ -1,15 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Phone, Video, X, Paperclip, Send, MoreVertical, MessageSquare } from 'lucide-react';
+import { Phone, Video, X, Paperclip, Send, MoreVertical, MessageSquare, Loader2 } from 'lucide-react';
 import io from 'socket.io-client';
 import MessageInput from './MessageInput';
 import CallModal from './CallModal';
+import { chatAPI } from '../../utils/api';
 
 const ChatWindow = ({ currentUser, chatPartner, onClose }) => {
   const [messages, setMessages] = useState([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
   const [socket, setSocket] = useState(null);
   const [activeCall, setActiveCall] = useState(null); // 'audio' | 'video' | null
   const messagesEndRef = useRef(null);
+
+  // Fetch Chat History
+  useEffect(() => {
+    setIsLoadingHistory(true);
+    chatAPI.getHistory(chatPartner._id)
+      .then(res => setMessages(res.data))
+      .catch(console.error)
+      .finally(() => setIsLoadingHistory(false));
+  }, [chatPartner._id]);
 
   // Initialize Socket Connection
   useEffect(() => {
@@ -118,7 +129,12 @@ const ChatWindow = ({ currentUser, chatPartner, onClose }) => {
 
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
-        {messages.length === 0 ? (
+        {isLoadingHistory ? (
+          <div className="h-full flex flex-col items-center justify-center text-slate-500 space-y-2">
+            <Loader2 size={32} className="animate-spin text-vault-gold" />
+            <p className="text-sm text-slate-400">Loading messages...</p>
+          </div>
+        ) : messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-slate-500 space-y-2">
             <MessageSquare size={32} className="opacity-50 text-vault-gold" />
             <p className="text-sm text-slate-400">No messages yet. Say hi!</p>

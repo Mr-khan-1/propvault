@@ -73,6 +73,7 @@ app.use('/api/admin', require('./api/admin'));
 app.use('/api/agent', require('./api/agent'));
 app.use('/api/user', require('./api/user'));
 app.use('/api/properties', require('./api/property'));
+app.use('/api/chat', require('./api/chat'));
 
 // Health Check Routes (to prevent Railway from killing the container)
 app.get('/', (req, res) => res.status(200).send('OK'));

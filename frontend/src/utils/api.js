@@ -75,4 +75,8 @@ export const userAPI = {
   favorites: () => api.get('/user/favorites'),
 };
 
+export const chatAPI = {
+  getHistory: (partnerId) => api.get(`/chat/${partnerId}`),
+};
+
 export default api;
