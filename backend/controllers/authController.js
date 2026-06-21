@@ -32,11 +32,7 @@ exports.sendOTP = async (req, res) => {
     let emailErrorMessage = null;
     
     try {
-      // Send email using SMTP (fails on Railway due to port 465/587 block)
-      await Promise.race([
-        sendOTP(email, otp, userType),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Railway SMTP Blocked / Timeout')), 10000))
-      ]);
+      await sendOTP(email, otp, userType);
       emailSent = true;
     } catch (emailError) {
       emailErrorMessage = emailError.message;
@@ -53,7 +49,7 @@ exports.sendOTP = async (req, res) => {
       });
     } else {
       res.status(500).json({
-        message: 'Email could not be sent. Railway blocks Gmail SMTP. Please configure an Email API (like Resend/SendGrid) or contact Railway support.',
+        message: emailErrorMessage || 'Email could not be sent. Please configure an Email API or check credentials.',
         emailSent: false,
         debugError: emailErrorMessage
       });

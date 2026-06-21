@@ -85,9 +85,7 @@ app.get('/api/health', (req, res) => {
     status: 'Server is running ✅',
     env: process.env.NODE_ENV || 'not set',
     email: {
-      configured: mailConfig.configured,
-      user: mailConfig.user ? mailConfig.user.substring(0, 3) + '***' : 'MISSING',
-      passLength: mailConfig.pass ? mailConfig.pass.length : 0
+      configured: mailConfig.configured
     }
   });
 });
