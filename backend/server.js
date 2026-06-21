@@ -78,7 +78,17 @@ app.use('/api/properties', require('./api/property'));
 app.get('/', (req, res) => res.status(200).send('OK'));
 app.get('/health', (req, res) => res.status(200).send('OK'));
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'Server is running ✅' });
+  const { getMailConfig } = require('./utils/sendOTP');
+  const mailConfig = getMailConfig();
+  res.json({
+    status: 'Server is running ✅',
+    env: process.env.NODE_ENV || 'not set',
+    email: {
+      configured: mailConfig.configured,
+      user: mailConfig.user ? mailConfig.user.substring(0, 3) + '***' : 'MISSING',
+      passLength: mailConfig.pass ? mailConfig.pass.length : 0
+    }
+  });
 });
 
 // Error Handling Middleware

@@ -1,12 +1,25 @@
 const nodemailer = require('nodemailer');
 
 const getMailConfig = () => {
-  const user = (process.env.GMAIL_USER || process.env.EMAIL_USER)?.trim();
-  const pass = (process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASSWORD)?.replace(/\s/g, '').trim();
-  return { user, pass, configured: Boolean(user && pass && pass.length >= 16) };
+  const user = (process.env.GMAIL_USER || process.env.EMAIL_USER || '').trim();
+  const pass = (process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASSWORD || '').replace(/\s/g, '').trim();
+  const configured = Boolean(user && pass && pass.length >= 16);
+  
+  if (!configured) {
+    console.error('❌ Email not configured:', {
+      hasUser: Boolean(user),
+      userValue: user ? user.substring(0, 3) + '***' : 'MISSING',
+      hasPass: Boolean(pass),
+      passLength: pass ? pass.length : 0,
+      envKeys: Object.keys(process.env).filter(k => k.includes('MAIL') || k.includes('EMAIL')).join(', ')
+    });
+  }
+
+  return { user, pass, configured };
 };
 
-const createTransporter = () => {
+// Create a FRESH transporter each time — avoids stale connection issues on Railway
+const getTransporter = () => {
   const { user, pass, configured } = getMailConfig();
   if (!configured) return null;
 
@@ -17,19 +30,29 @@ const createTransporter = () => {
     auth: { user, pass },
     tls: {
       rejectUnauthorized: false
-    }
+    },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000
   });
 };
-
-let transporter = createTransporter();
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 const sendMailSafe = async (mailOptions) => {
+  const transporter = getTransporter();
   if (!transporter) {
-    throw new Error('Email service not configured');
+    throw new Error('Email service not configured — check EMAIL_USER and EMAIL_PASSWORD env vars');
   }
-  return transporter.sendMail(mailOptions);
+  
+  try {
+    const result = await transporter.sendMail(mailOptions);
+    console.log('✅ Email sent to:', mailOptions.to, '| MessageId:', result.messageId);
+    return result;
+  } catch (error) {
+    console.error('❌ Email send failed:', error.message);
+    throw error;
+  }
 };
 
 const sendOTP = async (email, otp, userType) => {
