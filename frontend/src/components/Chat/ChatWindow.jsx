@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Phone, Video, X, Paperclip, Send, MoreVertical } from 'lucide-react';
+import { Phone, Video, X, Paperclip, Send, MoreVertical, MessageSquare } from 'lucide-react';
 import io from 'socket.io-client';
 import MessageInput from './MessageInput';
 import CallModal from './CallModal';
