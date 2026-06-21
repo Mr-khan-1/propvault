@@ -59,15 +59,15 @@ const MessageInput = ({ onSendMessage, onTyping }) => {
   };
 
   return (
-    <div className="p-3 bg-slate-800 border-t border-slate-700 rounded-b-xl">
+    <div className="p-3 bg-vault-950/60 backdrop-blur-xl border-t border-white/10 rounded-b-xl">
       <form onSubmit={handleSubmit} className="flex items-end gap-2">
-        <div className="flex-1 bg-slate-900 rounded-xl border border-slate-700 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all flex items-center pr-2">
+        <div className="flex-1 input-field py-2 px-3 flex items-center pr-2 relative group">
           <input
             type="text"
             value={text}
             onChange={handleChange}
             placeholder="Type a message..."
-            className="w-full bg-transparent text-white px-4 py-2.5 outline-none text-sm placeholder-slate-500"
+            className="w-full bg-transparent text-white px-2 outline-none text-sm placeholder-slate-500"
           />
           <input
             type="file"
@@ -80,7 +80,7 @@ const MessageInput = ({ onSendMessage, onTyping }) => {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
-            className="p-1.5 text-slate-400 hover:text-white transition-colors disabled:opacity-50"
+            className="p-1.5 text-slate-400 hover:text-vault-gold transition-colors disabled:opacity-50"
             title="Attach file"
           >
             <Paperclip size={18} />
@@ -89,7 +89,7 @@ const MessageInput = ({ onSendMessage, onTyping }) => {
         <button
           type="submit"
           disabled={!text.trim() && !isUploading}
-          className="p-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 transition-colors flex-shrink-0"
+          className="p-3 bg-gradient-to-r from-vault-gold to-amber-400 text-vault-950 rounded-xl hover:shadow-lg hover:shadow-vault-gold/20 disabled:opacity-50 transition-all flex-shrink-0"
         >
           <Send size={18} />
         </button>

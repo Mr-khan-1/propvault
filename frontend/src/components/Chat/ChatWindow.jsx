@@ -85,12 +85,12 @@ const ChatWindow = ({ currentUser, chatPartner, onClose }) => {
   };
 
   return (
-    <div className="fixed bottom-0 right-4 w-96 h-[500px] bg-slate-900 border border-slate-700 rounded-t-xl flex flex-col shadow-2xl z-50">
+    <div className="fixed bottom-0 right-4 w-96 h-[500px] ultra-glass rounded-t-2xl flex flex-col shadow-2xl shadow-vault-gold/10 z-50">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-slate-800 rounded-t-xl border-b border-slate-700">
+      <div className="flex items-center justify-between px-4 py-3 bg-vault-950/80 backdrop-blur-xl border-b border-white/10">
         <div className="flex items-center gap-3">
           <div className="relative">
-            <div className="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center text-white font-bold">
+            <div className="w-10 h-10 bg-vault-gold/20 border border-vault-gold/30 rounded-full flex items-center justify-center text-vault-gold font-bold">
               {chatPartner.name?.charAt(0) || 'U'}
             </div>
             <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-slate-800 rounded-full"></div>
@@ -120,8 +120,8 @@ const ChatWindow = ({ currentUser, chatPartner, onClose }) => {
       <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-slate-500 space-y-2">
-            <MessageSquare size={32} className="opacity-50" />
-            <p className="text-sm">No messages yet. Say hi!</p>
+            <MessageSquare size={32} className="opacity-50 text-vault-gold" />
+            <p className="text-sm text-slate-400">No messages yet. Say hi!</p>
           </div>
         ) : (
           messages.map((msg, index) => {
@@ -129,13 +129,13 @@ const ChatWindow = ({ currentUser, chatPartner, onClose }) => {
             return (
               <div key={index} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[75%] rounded-2xl px-4 py-2 ${
-                  isMe ? 'bg-blue-600 text-white rounded-br-none' : 'bg-slate-800 text-slate-200 border border-slate-700 rounded-bl-none'
+                  isMe ? 'bg-vault-gold text-vault-950 rounded-br-none shadow-lg shadow-vault-gold/20' : 'glass border border-white/10 text-slate-200 rounded-bl-none'
                 }`}>
                   {msg.fileUrl && (
                     <img src={msg.fileUrl} alt="attachment" className="rounded-lg mb-2 max-w-full" />
                   )}
-                  {msg.text && <p className="text-sm">{msg.text}</p>}
-                  <p className={`text-[10px] mt-1 ${isMe ? 'text-blue-200' : 'text-slate-500'} text-right`}>
+                  {msg.text && <p className="text-sm font-medium">{msg.text}</p>}
+                  <p className={`text-[10px] mt-1 ${isMe ? 'text-vault-900/70 font-semibold' : 'text-slate-500'} text-right`}>
                     {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
@@ -146,10 +146,10 @@ const ChatWindow = ({ currentUser, chatPartner, onClose }) => {
         
         {isTyping && (
           <div className="flex justify-start">
-            <div className="bg-slate-800 border border-slate-700 rounded-2xl rounded-bl-none px-4 py-3 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce"></span>
-              <span className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce delay-75"></span>
-              <span className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce delay-150"></span>
+            <div className="glass border border-white/10 rounded-2xl rounded-bl-none px-4 py-3 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 bg-vault-gold rounded-full animate-bounce"></span>
+              <span className="w-1.5 h-1.5 bg-vault-gold rounded-full animate-bounce delay-75"></span>
+              <span className="w-1.5 h-1.5 bg-vault-gold rounded-full animate-bounce delay-150"></span>
             </div>
           </div>
         )}
